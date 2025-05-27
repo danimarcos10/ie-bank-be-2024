@@ -13,9 +13,9 @@ permissions:
   security-events: write
 
 env:
-  BACKEND_WEBAPP_DEV: aguadamillas-be-dev
-  BACKEND_WEBAPP_UAT: aguadamillas-be-uat
-  BACKEND_WEBAPP_PROD: aguadamillas-be-prod
+  BACKEND_WEBAPP_DEV: aguadamillas-asc-backend
+  BACKEND_WEBAPP_UAT: aguadamillas-asc-backend
+  BACKEND_WEBAPP_PROD: aguadamillas-asc-backend
 
 jobs:
   test:
