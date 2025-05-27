@@ -13,9 +13,12 @@ permissions:
   security-events: write
 
 env:
-  BACKEND_WEBAPP_DEV: aguadamillas-asc-backend
-  BACKEND_WEBAPP_UAT: aguadamillas-asc-backend
-  BACKEND_WEBAPP_PROD: aguadamillas-asc-backend
+  BACKEND_WEBAPP_DEV: aguadamillas-be-dev
+  BACKEND_WEBAPP_UAT: aguadamillas-be-uat
+  BACKEND_WEBAPP_PROD: aguadamillas-be-prod
+  RESOURCE_GROUP_DEV: BCSAI2024-DEVOPS-STUDENTS-A-DEV
+  RESOURCE_GROUP_UAT: BCSAI2024-DEVOPS-STUDENTS-A-UAT
+  RESOURCE_GROUP_PROD: BCSAI2024-DEVOPS-STUDENTS-A-PROD
 
 jobs:
   test:
@@ -188,6 +191,7 @@ jobs:
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.BACKEND_WEBAPP_DEV }}
+        resource-group-name: ${{ env.RESOURCE_GROUP_DEV }}
         package: .
         startup-command: 'python -m gunicorn app:app'
 
@@ -232,6 +236,7 @@ jobs:
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.BACKEND_WEBAPP_UAT }}
+        resource-group-name: ${{ env.RESOURCE_GROUP_UAT }}
         package: .
         startup-command: 'python -m gunicorn app:app'
 
@@ -276,6 +281,7 @@ jobs:
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.BACKEND_WEBAPP_PROD }}
+        resource-group-name: ${{ env.RESOURCE_GROUP_PROD }}
         package: .
         startup-command: 'python -m gunicorn app:app'
 
