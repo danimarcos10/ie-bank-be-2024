@@ -176,30 +176,20 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: 🔍 Debug Azure Resources
+    - name: 🔍 Verify Azure Connection
       run: |
-        echo "🔍 Checking available web apps..."
-        az webapp list --resource-group BCSAI2024-DEVOPS-PROFESSORS --output table
-        echo "🔍 Checking subscription context..."
-        az account show
-
-    - name: 🏗️ Ensure Web App Exists
-      run: |
-        echo "🏗️ Checking if web app exists..."
-        if ! az webapp show --name aguadamillas-asc-backend --resource-group BCSAI2024-DEVOPS-PROFESSORS >/dev/null 2>&1; then
-          echo "🚀 Creating web app..."
-          az webapp create --name aguadamillas-asc-backend --resource-group BCSAI2024-DEVOPS-PROFESSORS --plan aguadamillas-asp --runtime "PYTHON:3.11"
-        else
-          echo "✅ Web app already exists"
-        fi
+        echo "🔍 Testing Azure connection..."
+        echo "Subscription ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+        echo "Client ID: ${{ secrets.AZURE_CLIENT_ID }}"
+        echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
+        az account show --query "id" -o tsv
 
     - name: 🚀 Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'aguadamillas-asc-backend'
-        resource-group-name: 'BCSAI2024-DEVOPS-PROFESSORS'
-        slot-name: 'Production'
         package: .
+        startup-command: 'python -m gunicorn app:app'
 
     - name: ✅ Health Check
       run: |
@@ -230,13 +220,20 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: 🔍 Verify Azure Connection
+      run: |
+        echo "🔍 Testing Azure connection..."
+        echo "Subscription ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+        echo "Client ID: ${{ secrets.AZURE_CLIENT_ID }}"
+        echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
+        az account show --query "id" -o tsv
+
     - name: 🚀 Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'aguadamillas-asc-backend'
-        resource-group-name: 'BCSAI2024-DEVOPS-PROFESSORS'
-        slot-name: 'Production'
         package: .
+        startup-command: 'python -m gunicorn app:app'
 
     - name: ✅ Health Check
       run: |
@@ -267,13 +264,20 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: 🔍 Verify Azure Connection
+      run: |
+        echo "🔍 Testing Azure connection..."
+        echo "Subscription ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+        echo "Client ID: ${{ secrets.AZURE_CLIENT_ID }}"
+        echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
+        az account show --query "id" -o tsv
+
     - name: 🚀 Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'aguadamillas-asc-backend'
-        resource-group-name: 'BCSAI2024-DEVOPS-PROFESSORS'
-        slot-name: 'Production'
         package: .
+        startup-command: 'python -m gunicorn app:app'
 
     - name: ✅ Health Check
       run: |
