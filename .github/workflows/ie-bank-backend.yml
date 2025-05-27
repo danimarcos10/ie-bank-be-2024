@@ -176,10 +176,28 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: 🔍 Debug Azure Resources
+      run: |
+        echo "🔍 Checking available web apps..."
+        az webapp list --resource-group BCSAI2024-DEVOPS-PROFESSORS --output table
+        echo "🔍 Checking subscription context..."
+        az account show
+
+    - name: 🏗️ Ensure Web App Exists
+      run: |
+        echo "🏗️ Checking if web app exists..."
+        if ! az webapp show --name aguadamillas-asc-backend --resource-group BCSAI2024-DEVOPS-PROFESSORS >/dev/null 2>&1; then
+          echo "🚀 Creating web app..."
+          az webapp create --name aguadamillas-asc-backend --resource-group BCSAI2024-DEVOPS-PROFESSORS --plan aguadamillas-asp --runtime "PYTHON:3.11"
+        else
+          echo "✅ Web app already exists"
+        fi
+
     - name: 🚀 Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'aguadamillas-asc-backend'
+        resource-group-name: 'BCSAI2024-DEVOPS-PROFESSORS'
         slot-name: 'Production'
         package: .
 
@@ -216,6 +234,7 @@ jobs:
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'aguadamillas-asc-backend'
+        resource-group-name: 'BCSAI2024-DEVOPS-PROFESSORS'
         slot-name: 'Production'
         package: .
 
@@ -252,6 +271,7 @@ jobs:
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'aguadamillas-asc-backend'
+        resource-group-name: 'BCSAI2024-DEVOPS-PROFESSORS'
         slot-name: 'Production'
         package: .
 
