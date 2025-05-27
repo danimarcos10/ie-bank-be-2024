@@ -13,7 +13,7 @@ permissions:
   security-events: write
 
 env:
-  BACKEND_WEBAPP_DEV: aguadamillas-be-dev
+  BACKEND_WEBAPP_DEV: aguadamillas-be-dev-2024
   BACKEND_WEBAPP_UAT: aguadamillas-be-uat
   BACKEND_WEBAPP_PROD: aguadamillas-be-prod
   RESOURCE_GROUP_DEV: BCSAI2024-DEVOPS-STUDENTS-A-DEV
