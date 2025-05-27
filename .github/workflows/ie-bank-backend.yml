@@ -187,7 +187,7 @@ jobs:
     - name: 🚀 Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
-        app-name: 'aguadamillas-asc-backend'
+        app-name: ${{ env.BACKEND_WEBAPP_DEV }}
         package: .
         startup-command: 'python -m gunicorn app:app'
 
@@ -196,7 +196,7 @@ jobs:
         echo "⏳ Waiting for deployment to complete..."
         sleep 30
         echo "🔍 Checking application health..."
-        curl -f https://aguadamillas-asc-backend.azurewebsites.net/skull || echo "⚠️ Health check failed, but deployment completed"
+        curl -f https://${{ env.BACKEND_WEBAPP_DEV }}.azurewebsites.net/skull || echo "⚠️ Health check failed, but deployment completed"
         echo "✅ Deployment completed successfully"
 
   deploy-uat:
@@ -231,7 +231,7 @@ jobs:
     - name: 🚀 Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
-        app-name: 'aguadamillas-asc-backend'
+        app-name: ${{ env.BACKEND_WEBAPP_UAT }}
         package: .
         startup-command: 'python -m gunicorn app:app'
 
@@ -240,7 +240,7 @@ jobs:
         echo "⏳ Waiting for UAT deployment to complete..."
         sleep 30
         echo "🔍 Checking UAT application health..."
-        curl -f https://aguadamillas-asc-backend.azurewebsites.net/skull || echo "⚠️ UAT health check failed, but deployment completed"
+        curl -f https://${{ env.BACKEND_WEBAPP_UAT }}.azurewebsites.net/skull || echo "⚠️ UAT health check failed, but deployment completed"
         echo "✅ UAT deployment completed successfully"
 
   deploy-prod:
@@ -275,7 +275,7 @@ jobs:
     - name: 🚀 Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
-        app-name: 'aguadamillas-asc-backend'
+        app-name: ${{ env.BACKEND_WEBAPP_PROD }}
         package: .
         startup-command: 'python -m gunicorn app:app'
 
@@ -284,7 +284,7 @@ jobs:
         echo "⏳ Waiting for production deployment to complete..."
         sleep 30
         echo "🔍 Checking production application health..."
-        curl -f https://aguadamillas-asc-backend.azurewebsites.net/skull || echo "⚠️ Production health check failed, but deployment completed"
+        curl -f https://${{ env.BACKEND_WEBAPP_PROD }}.azurewebsites.net/skull || echo "⚠️ Production health check failed, but deployment completed"
         echo "✅ Production deployment completed successfully"
 
     - name: 🏷️ Create Release Tag
