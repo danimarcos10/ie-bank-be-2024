@@ -24,12 +24,20 @@ def skull():
 
 @app.route('/accounts', methods=['POST'])
 def create_account():
-    name = request.json['name']
-    currency = request.json['currency']
-    account = Account(name, currency)
-    db.session.add(account)
-    db.session.commit()
-    return format_account(account)
+    try:
+        if not request.json:
+            return {'error': 'Invalid JSON or no data provided'}, 400
+        name = request.json['name']
+        currency = request.json['currency']
+        country = request.json.get('country', 'Spain')  # Default to Spain if not provided
+        account = Account(name, currency, country)
+        db.session.add(account)
+        db.session.commit()
+        return format_account(account)
+    except KeyError as e:
+        return {'error': f'Missing required field: {str(e)}'}, 400
+    except Exception as e:
+        return {'error': 'Internal server error'}, 500
 
 @app.route('/accounts', methods=['GET'])
 def get_accounts():
@@ -39,6 +47,8 @@ def get_accounts():
 @app.route('/accounts/<int:id>', methods=['GET'])
 def get_account(id):
     account = Account.query.get(id)
+    if account is None:
+        return {'error': 'Account not found'}, 404
     return format_account(account)
 
 @app.route('/accounts/<int:id>', methods=['PUT'])
@@ -62,6 +72,7 @@ def format_account(account):
         'account_number': account.account_number,
         'balance': account.balance,
         'currency': account.currency,
+        'country': account.country,
         'status': account.status,
         'created_at': account.created_at
     }
