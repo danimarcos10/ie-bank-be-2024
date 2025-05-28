@@ -146,29 +146,12 @@ jobs:
         zip -r deploy.zip . -x "*.git/*" "*.github/*" "*__pycache__/*" "*.pytest_cache/*"
 
     - name: 🚀 Deploy to Azure Web App with Remote Build
-      run: |
-        # Get publishing credentials
-        PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles \
-          --resource-group ${{ env.RESOURCE_GROUP_DEV }} \
-          --name ${{ env.BACKEND_WEBAPP_DEV }} \
-          --xml)
-        
-        # Extract username and password
-        USERNAME=$(echo "$PUBLISH_PROFILE" | grep -oP '(?<=userName=")[^"]*' | head -1)
-        PASSWORD=$(echo "$PUBLISH_PROFILE" | grep -oP '(?<=userPWD=")[^"]*' | head -1)
-        
-        # Deploy using Kudu API with remote build
-        curl -X POST \
-          -u "$USERNAME:$PASSWORD" \
-          -T deploy.zip \
-          "https://${{ env.BACKEND_WEBAPP_DEV }}.scm.azurewebsites.net/api/zipdeploy?isAsync=false&build=remote"
-
-    - name: 🔧 Set Startup Command
-      run: |
-        az webapp config set \
-          --resource-group ${{ env.RESOURCE_GROUP_DEV }} \
-          --name ${{ env.BACKEND_WEBAPP_DEV }} \
-          --startup-file "gunicorn --bind 0.0.0.0:8000 app:app"
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.BACKEND_WEBAPP_DEV }}
+        resource-group-name: ${{ env.RESOURCE_GROUP_DEV }}
+        package: deploy.zip
+        startup-command: 'gunicorn --bind 0.0.0.0:8000 app:app'
 
     - name: ✅ Health Check
       run: |
