@@ -216,8 +216,8 @@ jobs:
         curl -f https://aguadamillas-be-dev-2024-edf6d3ayg2bxb6gn.westeurope-01.azurewebsites.net/skull || echo "⚠️ Health check failed, but deployment completed"
         echo "✅ Deployment completed successfully"
 
-    - name: 📤 Logout of Azure
-      uses: azure/logout@v2
+    # - name: 📤 Logout of Azure
+    # uses: azure/logout@v2
 
   deploy-uat:
     name: 🎭 Deploy to UAT
