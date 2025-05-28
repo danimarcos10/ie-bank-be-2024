@@ -134,10 +134,7 @@ jobs:
           --name ${{ env.BACKEND_WEBAPP_DEV }} \
           --settings \
             ENV=dev \
-            DBUSER="${{ secrets.DBUSER }}" \
-            DBPASS="${{ secrets.DBPASS }}" \
-            DBHOST="${{ secrets.DBHOST }}" \
-            DBNAME="${{ secrets.DBNAME }}" \
+            DATABASE_URL="postgresql+psycopg2://${{ secrets.DBUSER }}:${{ secrets.DBPASS }}@${{ secrets.DBHOST }}:5432/${{ secrets.DBNAME }}?sslmode=require" \
             SCM_DO_BUILD_DURING_DEPLOYMENT=true \
             ENABLE_ORYX_BUILD=true
 
