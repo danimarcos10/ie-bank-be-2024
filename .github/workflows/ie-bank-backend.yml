@@ -101,78 +101,18 @@ jobs:
           bandit-report.json
           safety-report.json
 
-  build:
-    name: 🏗️ Build Application
-    runs-on: ubuntu-latest
-    needs: test
-    env:
-      ENV: ghci
-
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-
-    - name: 🐍 Set up Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-
-    - name: 📦 Cache pip dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
-    - name: ⬆️ Upgrade pip
-      run: |
-        python -m pip install --upgrade pip
-
-    - name: 📋 Install dependencies
-      run: |
-        pip install -r requirements.txt
-
-    - name: 🔧 Create deployment package
-      run: |
-        # Remove development dependencies and test files
-        rm -rf tests/
-        rm -rf .pytest_cache/
-        rm -rf htmlcov/
-        rm -f .coverage
-        rm -f coverage.xml
-        # Ensure requirements.txt is present for Azure deployment
-        ls -la requirements.txt
-
-    - name: 📤 Upload artifact for deployment jobs
-      uses: actions/upload-artifact@v4
-      with:
-        name: python-app
-        path: |
-          .
-          !.git
-          !.github
-          !tests
-          !.pytest_cache
-          !htmlcov
-          !*.pyc
-          !__pycache__
-
   deploy-dev:
     name: 🚀 Deploy to Development
     runs-on: ubuntu-latest
-    needs: build
+    needs: test
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     environment:
       name: 'Development'
       url: https://aguadamillas-be-dev-2024-edf6d3ayg2bxb6gn.westeurope-01.azurewebsites.net
 
     steps:
-    - name: 📥 Download artifact from build job
-      uses: actions/download-artifact@v4
-      with:
-        name: python-app
-        path: .
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
 
     - name: 🔐 Azure Login
       uses: azure/login@v2
@@ -201,13 +141,24 @@ jobs:
             SCM_DO_BUILD_DURING_DEPLOYMENT=true \
             ENABLE_ORYX_BUILD=true
 
-    - name: 🚀 Deploy to Azure Web App
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: ${{ env.BACKEND_WEBAPP_DEV }}
-        resource-group-name: ${{ env.RESOURCE_GROUP_DEV }}
-        package: .
-        startup-command: 'gunicorn --bind 0.0.0.0:8000 app:app'
+    - name: 📦 Create deployment package
+      run: |
+        zip -r deploy.zip . -x "*.git/*" "*.github/*" "*__pycache__/*" "*.pytest_cache/*"
+
+    - name: 🚀 Deploy to Azure Web App with Remote Build
+      run: |
+        az webapp deployment source config-zip \
+          --resource-group ${{ env.RESOURCE_GROUP_DEV }} \
+          --name ${{ env.BACKEND_WEBAPP_DEV }} \
+          --src deploy.zip \
+          --build-remote true
+
+    - name: 🔧 Set Startup Command
+      run: |
+        az webapp config set \
+          --resource-group ${{ env.RESOURCE_GROUP_DEV }} \
+          --name ${{ env.BACKEND_WEBAPP_DEV }} \
+          --startup-file "gunicorn --bind 0.0.0.0:8000 app:app"
 
     - name: ✅ Health Check
       run: |
@@ -222,18 +173,15 @@ jobs:
   deploy-uat:
     name: 🎭 Deploy to UAT
     runs-on: ubuntu-latest
-    needs: [build, deploy-dev]
+    needs: [test]
     if: github.ref == 'refs/heads/main'
     environment:
       name: 'UAT'
       url: https://${{ env.BACKEND_WEBAPP_UAT }}.azurewebsites.net
 
     steps:
-    - name: 📥 Download artifact from build job
-      uses: actions/download-artifact@v4
-      with:
-        name: python-app
-        path: .
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
 
     - name: 🔐 Azure Login
       uses: azure/login@v2
@@ -267,18 +215,15 @@ jobs:
   deploy-prod:
     name: 🌟 Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build, deploy-uat]
+    needs: [deploy-uat]
     if: github.ref == 'refs/heads/main'
     environment:
       name: 'Production'
       url: https://${{ env.BACKEND_WEBAPP_PROD }}.azurewebsites.net
 
     steps:
-    - name: 📥 Download artifact from build job
-      uses: actions/download-artifact@v4
-      with:
-        name: python-app
-        path: .
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
 
     - name: 🔐 Azure Login
       uses: azure/login@v2
