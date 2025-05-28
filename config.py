@@ -18,10 +18,15 @@ class DevelopmentConfig(Config):
     if database_url:
         SQLALCHEMY_DATABASE_URI = database_url
     else:
-        SQLALCHEMY_DATABASE_URI = 'postgresql://{dbuser}:{dbpass}@{dbhost}/{dbname}'.format(
-            dbuser=os.getenv('DBUSER'),
-            dbpass=os.getenv('DBPASS'),
-            dbhost=os.getenv('DBHOST'),
-            dbname=os.getenv('DBNAME')
-        )
+        # Fallback for local development - only use if all individual vars are present
+        dbuser = os.getenv('DBUSER')
+        dbpass = os.getenv('DBPASS') 
+        dbhost = os.getenv('DBHOST')
+        dbname = os.getenv('DBNAME')
+        
+        if all([dbuser, dbpass, dbhost, dbname]):
+            SQLALCHEMY_DATABASE_URI = f'postgresql://{dbuser}:{dbpass}@{dbhost}/{dbname}'
+        else:
+            # Final fallback to SQLite for local development
+            SQLALCHEMY_DATABASE_URI = 'sqlite:///local.db'
     DEBUG = True

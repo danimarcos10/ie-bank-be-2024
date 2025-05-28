@@ -129,6 +129,13 @@ jobs:
 
     - name: 🔧 Configure App Settings
       run: |
+        # Remove individual database variables to prevent conflicts
+        az webapp config appsettings delete \
+          --resource-group ${{ env.RESOURCE_GROUP_DEV }} \
+          --name ${{ env.BACKEND_WEBAPP_DEV }} \
+          --setting-names DBHOST DBUSER DBPASS DBNAME || true
+        
+        # Set the correct app settings
         az webapp config appsettings set \
           --resource-group ${{ env.RESOURCE_GROUP_DEV }} \
           --name ${{ env.BACKEND_WEBAPP_DEV }} \
@@ -137,6 +144,11 @@ jobs:
             DATABASE_URL="postgresql+psycopg2://${{ secrets.DBUSER }}:${{ secrets.DBPASS }}@${{ secrets.DBHOST }}:5432/${{ secrets.DBNAME }}?sslmode=require" \
             SCM_DO_BUILD_DURING_DEPLOYMENT=true \
             ENABLE_ORYX_BUILD=true
+
+    - name: ⏳ Wait for App Service restart
+      run: |
+        echo "⏳ Waiting for App Service to restart after configuration changes..."
+        sleep 60
 
     - name: 📦 Create deployment package
       run: |
