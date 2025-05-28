@@ -141,8 +141,8 @@ jobs:
         rm -rf htmlcov/
         rm -f .coverage
         rm -f coverage.xml
-        # Create a clean requirements.txt for production
-        pip freeze > requirements-freeze.txt
+        # Ensure requirements.txt is present for Azure deployment
+        ls -la requirements.txt
 
     - name: 📤 Upload artifact for deployment jobs
       uses: actions/upload-artifact@v4
@@ -165,7 +165,7 @@ jobs:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     environment:
       name: 'Development'
-      url: https://${{ env.BACKEND_WEBAPP_DEV }}.azurewebsites.net
+      url: https://aguadamillas-be-dev-2024-edf6d3ayg2bxb6gn.westeurope-01.azurewebsites.net
 
     steps:
     - name: 📥 Download artifact from build job
@@ -187,21 +187,37 @@ jobs:
         echo "Tenant ID: ${{ secrets.AZURE_TENANT_ID }}"
         az account show --query "id" -o tsv
 
+    - name: 🔧 Configure App Settings
+      run: |
+        az webapp config appsettings set \
+          --resource-group ${{ env.RESOURCE_GROUP_DEV }} \
+          --name ${{ env.BACKEND_WEBAPP_DEV }} \
+          --settings \
+            ENV=dev \
+            DBUSER="${{ secrets.DBUSER }}" \
+            DBPASS="${{ secrets.DBPASS }}" \
+            DBHOST="${{ secrets.DBHOST }}" \
+            DBNAME="${{ secrets.DBNAME }}" \
+            SCM_DO_BUILD_DURING_DEPLOYMENT=true \
+            ENABLE_ORYX_BUILD=true
+
     - name: 🚀 Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.BACKEND_WEBAPP_DEV }}
         resource-group-name: ${{ env.RESOURCE_GROUP_DEV }}
         package: .
-        startup-command: 'python -m gunicorn app:app'
+        startup-command: 'gunicorn --bind 0.0.0.0:8000 app:app'
 
     - name: ✅ Health Check
       run: |
         echo "⏳ Waiting for deployment to complete..."
-        sleep 30
-        echo "🔍 Checking application health..."
-        curl -f https://${{ env.BACKEND_WEBAPP_DEV }}.azurewebsites.net/skull || echo "⚠️ Health check failed, but deployment completed"
+        sleep 60
+        curl -f https://aguadamillas-be-dev-2024-edf6d3ayg2bxb6gn.westeurope-01.azurewebsites.net/skull || echo "⚠️ Health check failed, but deployment completed"
         echo "✅ Deployment completed successfully"
+
+    - name: 📤 Logout of Azure
+      uses: azure/logout@v2
 
   deploy-uat:
     name: 🎭 Deploy to UAT
